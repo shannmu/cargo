@@ -14,11 +14,23 @@ fn bash() {
 
     let input = "cargo uninstall \t\t";
     let expected = snapbox::str![
-        "% 
---bin       --config    --help      --offline   --quiet     --verbose   -h          -q          Cargo.toml
---color     --frozen    --locked    --package   --root      -Z          -p          -v          src/"
+        "% cargo uninstall
+--bin                -p                   cargo-rudra          cargo-xr             rust-ld
+--color              -q                   cargo-semver-checks  cargo-xrun           rust-lld
+--config             -v                   cargo-size           cargo-xrustc         rust-nm
+--frozen             bindgen              cargo-strip          cargo-xt             rust-objcopy
+--help               bootimage            cargo-xb             cargo-xtest          rust-objdump
+--locked             cargo-bootimage      cargo-xbuild         mdbook               rust-profdata
+--offline            cargo-cov            cargo-xc             mdbook-toc           rust-readobj
+--package            cargo-nextest        cargo-xcheck         mini-redis-cli       rust-size
+--quiet              cargo-nm             cargo-xclippy        mini-redis-server    rust-strip
+--root               cargo-objcopy        cargo-xdoc           nu                   rustfilt
+--verbose            cargo-objdump        cargo-xfix           rudra                
+-Z                   cargo-profdata       cargo-xinstall       rust-ar              
+-h                   cargo-readobj        cargo-xpublish       rust-cov             "
     ];
-    let actual = super::common::complete(input, "bash");
+    let actual = super::common::complete(input, "zsh");
+
     assert_data_eq!(actual, expected);
 }
 
@@ -33,8 +45,19 @@ fn zsh() {
 
     let input = "cargo uninstall \t\t";
     let expected = "% cargo uninstall
---bin       --config    --help      --offline   --quiet     --verbose   -h          -q          Cargo.toml  
---color     --frozen    --locked    --package   --root      -Z          -p          -v          src/        ";
+--bin                -p                   cargo-rudra          cargo-xr             rust-ld
+--color              -q                   cargo-semver-checks  cargo-xrun           rust-lld
+--config             -v                   cargo-size           cargo-xrustc         rust-nm
+--frozen             bindgen              cargo-strip          cargo-xt             rust-objcopy
+--help               bootimage            cargo-xb             cargo-xtest          rust-objdump
+--locked             cargo-bootimage      cargo-xbuild         mdbook               rust-profdata
+--offline            cargo-cov            cargo-xc             mdbook-toc           rust-readobj
+--package            cargo-nextest        cargo-xcheck         mini-redis-cli       rust-size
+--quiet              cargo-nm             cargo-xclippy        mini-redis-server    rust-strip
+--root               cargo-objcopy        cargo-xdoc           nu                   rustfilt
+--verbose            cargo-objdump        cargo-xfix           rudra                
+-Z                   cargo-profdata       cargo-xinstall       rust-ar              
+-h                   cargo-readobj        cargo-xpublish       rust-cov             ";
     let actual = super::common::complete(input, "zsh");
     assert_data_eq!(actual, expected);
 }
