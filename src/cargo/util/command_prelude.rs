@@ -177,7 +177,10 @@ pub trait CommandExt: Sized {
             ._arg(flag("examples", examples).help_heading(heading::TARGET_SELECTION))
             ._arg(
                 optional_multi_opt("example", "NAME", example)
-                    .help_heading(heading::TARGET_SELECTION),
+                    .help_heading(heading::TARGET_SELECTION)
+                    .add(clap_complete::dynamic::ArgValueCompleter::new(
+                        get_examples_candidates,
+                    )),
             )
     }
 
@@ -192,7 +195,10 @@ pub trait CommandExt: Sized {
             ._arg(flag("bins", bins).help_heading(heading::TARGET_SELECTION))
             ._arg(
                 optional_multi_opt("example", "NAME", example)
-                    .help_heading(heading::TARGET_SELECTION),
+                    .help_heading(heading::TARGET_SELECTION)
+                    .add(clap_complete::dynamic::ArgValueCompleter::new(
+                        get_examples_candidates,
+                    )),
             )
             ._arg(flag("examples", examples).help_heading(heading::TARGET_SELECTION))
     }
@@ -201,7 +207,10 @@ pub trait CommandExt: Sized {
         self._arg(optional_multi_opt("bin", "NAME", bin).help_heading(heading::TARGET_SELECTION))
             ._arg(
                 optional_multi_opt("example", "NAME", example)
-                    .help_heading(heading::TARGET_SELECTION),
+                    .help_heading(heading::TARGET_SELECTION)
+                    .add(clap_complete::dynamic::ArgValueCompleter::new(
+                        get_examples_candidates,
+                    )),
             )
     }
 
@@ -1025,6 +1034,37 @@ pub fn lockfile_path(
     }
 
     return Ok(Some(path));
+}
+
+fn get_examples_candidates() -> Vec<clap_complete::dynamic::CompletionCandidate> {
+    match get_examples_from_cwd() {
+        Ok(examples) => examples
+            .into_iter()
+            .map(|example| clap_complete::dynamic::CompletionCandidate::new(example))
+            .collect(),
+        Err(_) => vec![],
+    }
+}
+
+fn get_examples_from_cwd() -> CargoResult<Vec<OsString>> {
+    let mut examples = vec![];
+
+    let example_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples");
+
+    for example in example_path.read_dir()? {
+        let example = example?;
+        if !example.file_type()?.is_file() {
+            continue;
+        }
+
+        if let Some(name) = example.file_name().to_str() {
+            if name.ends_with(".rs") {
+                examples.push(name.into());
+            }
+        }
+    }
+
+    Ok(examples)
 }
 
 #[track_caller]

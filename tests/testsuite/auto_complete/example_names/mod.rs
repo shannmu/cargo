@@ -23,9 +23,9 @@ fn bash() {
 --benches                 --ignore-rust-version     --target                  -q
 --bin                     --jobs                    --target-dir              -r
 --bins                    --keep-going              --test                    -v
---build-plan              --lib                     --tests                   Cargo.toml
---color                   --locked                  --timings                 examples/
---config                  --manifest-path           --unit-graph              src/
+--build-plan              --lib                     --tests                   dynamic
+--color                   --locked                  --timings                 static
+--config                  --manifest-path           --unit-graph              
 --example                 --message-format          --verbose                 
 --examples                --no-default-features     --workspace               "
     ];
@@ -52,9 +52,9 @@ fn zsh() {
 --benches                 --ignore-rust-version     --target                  -q
 --bin                     --jobs                    --target-dir              -r
 --bins                    --keep-going              --test                    -v
---build-plan              --lib                     --tests                   Cargo.toml
---color                   --locked                  --timings                 examples/
---config                  --manifest-path           --unit-graph              src/
+--build-plan              --lib                     --tests                   dynamic
+--color                   --locked                  --timings                 static
+--config                  --manifest-path           --unit-graph              
 --example                 --message-format          --verbose                 
 --examples                --no-default-features     --workspace               ";
     let actual = super::common::complete(input, "zsh");
