@@ -23,8 +23,8 @@ fn bash() {
 --benches                 --ignore-rust-version     --target                  -q
 --bin                     --jobs                    --target-dir              -r
 --bins                    --keep-going              --test                    -v
---build-plan              --lib                     --tests                   Cargo.toml
---color                   --locked                  --timings                 src/
+--build-plan              --lib                     --tests                   compile_bench
+--color                   --locked                  --timings                 runtime_bench
 --config                  --manifest-path           --unit-graph              
 --example                 --message-format          --verbose                 
 --examples                --no-default-features     --workspace               "
@@ -52,8 +52,8 @@ fn zsh() {
 --benches                 --ignore-rust-version     --target                  -q
 --bin                     --jobs                    --target-dir              -r
 --bins                    --keep-going              --test                    -v
---build-plan              --lib                     --tests                   Cargo.toml
---color                   --locked                  --timings                 src/
+--build-plan              --lib                     --tests                   compile_bench
+--color                   --locked                  --timings                 runtime_bench
 --config                  --manifest-path           --unit-graph              
 --example                 --message-format          --verbose                 
 --examples                --no-default-features     --workspace               ";

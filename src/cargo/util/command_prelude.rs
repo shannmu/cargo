@@ -13,7 +13,7 @@ use crate::util::{
     print_available_packages, print_available_tests,
 };
 use crate::CargoResult;
-use anyhow::bail;
+use anyhow::{anyhow, bail};
 use cargo_util::paths;
 use cargo_util_schemas::manifest::ProfileName;
 use cargo_util_schemas::manifest::RegistryName;
@@ -158,7 +158,11 @@ pub trait CommandExt: Sized {
             ._arg(optional_multi_opt("test", "NAME", test).help_heading(heading::TARGET_SELECTION))
             ._arg(flag("benches", benches).help_heading(heading::TARGET_SELECTION))
             ._arg(
-                optional_multi_opt("bench", "NAME", bench).help_heading(heading::TARGET_SELECTION),
+                optional_multi_opt("bench", "NAME", bench)
+                    .help_heading(heading::TARGET_SELECTION)
+                    .add(clap_complete::dynamic::ArgValueCompleter::new(
+                        get_benches_candidates,
+                    )),
             )
             ._arg(flag("all-targets", all).help_heading(heading::TARGET_SELECTION))
     }
@@ -1025,6 +1029,43 @@ pub fn lockfile_path(
     }
 
     return Ok(Some(path));
+}
+
+fn get_benches_candidates() -> Vec<clap_complete::dynamic::CompletionCandidate> {
+    get_benches_from_manifest()
+        .map(|benches| {
+            benches
+                .into_iter()
+                .map(|bench| clap_complete::dynamic::CompletionCandidate::new(bench))
+                .collect()
+        })
+        .unwrap_or(vec![])
+}
+
+fn get_benches_from_manifest() -> Option<Vec<String>> {
+    let manifest = get_manifest_with_table().ok()?;
+    let mut benches = vec![];
+
+    let benches_array = manifest.get("bench")?.as_array()?;
+
+    for bench in benches_array {
+        let name = bench.as_table()?.get("name")?.as_str()?;
+        benches.push(name.to_owned());
+    }
+
+    Some(benches)
+}
+
+fn get_manifest_with_table() -> CargoResult<toml::Table> {
+    let menifest = env!("CARGO_MANIFEST_DIR");
+    let menifest = Path::new(menifest).join("Cargo.toml");
+
+    let value = toml::from_str::<toml::Value>(&std::fs::read_to_string(menifest)?)?;
+
+    match value {
+        toml::Value::Table(table) => Ok(table),
+        _ => Err(anyhow!("Error")),
+    }
 }
 
 #[track_caller]
