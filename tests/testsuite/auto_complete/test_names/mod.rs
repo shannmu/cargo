@@ -23,8 +23,8 @@ fn bash() {
 --benches                 --ignore-rust-version     --target                  -q
 --bin                     --jobs                    --target-dir              -r
 --bins                    --keep-going              --test                    -v
---build-plan              --lib                     --tests                   Cargo.toml
---color                   --locked                  --timings                 src/
+--build-plan              --lib                     --tests                   test1
+--color                   --locked                  --timings                 test2
 --config                  --manifest-path           --unit-graph              
 --example                 --message-format          --verbose                 
 --examples                --no-default-features     --workspace               "
@@ -43,8 +43,8 @@ fn bash() {
 --bin                     --jobs                    --target                  -q
 --bins                    --lib                     --target-dir              -r
 --color                   --locked                  --test                    -v
---config                  --manifest-path           --tests                   Cargo.toml
---doc                     --message-format          --timings                 src/
+--config                  --manifest-path           --tests                   test1
+--doc                     --message-format          --timings                 test2
 --example                 --no-default-features     --unit-graph              
 --examples                --no-fail-fast            --verbose                 
 --exclude                 --no-run                  --workspace               "
@@ -72,8 +72,8 @@ fn zsh() {
 --benches                 --ignore-rust-version     --target                  -q
 --bin                     --jobs                    --target-dir              -r
 --bins                    --keep-going              --test                    -v
---build-plan              --lib                     --tests                   Cargo.toml
---color                   --locked                  --timings                 src/
+--build-plan              --lib                     --tests                   test1
+--color                   --locked                  --timings                 test2
 --config                  --manifest-path           --unit-graph              
 --example                 --message-format          --verbose                 
 --examples                --no-default-features     --workspace               ";
@@ -90,8 +90,8 @@ fn zsh() {
 --bin                     --jobs                    --target                  -q
 --bins                    --lib                     --target-dir              -r
 --color                   --locked                  --test                    -v
---config                  --manifest-path           --tests                   Cargo.toml
---doc                     --message-format          --timings                 src/
+--config                  --manifest-path           --tests                   test1
+--doc                     --message-format          --timings                 test2
 --example                 --no-default-features     --unit-graph              
 --examples                --no-fail-fast            --verbose                 
 --exclude                 --no-run                  --workspace               ";

@@ -9,7 +9,10 @@ pub fn cli() -> Command {
         .arg(
             Arg::new("TESTNAME")
                 .action(ArgAction::Set)
-                .help("If specified, only run tests containing this string in their names"),
+                .help("If specified, only run tests containing this string in their names")
+                .add(clap_complete::dynamic::ArgValueCompleter::new(
+                    get_tests_candidates,
+                )),
         )
         .arg(
             Arg::new("args")
