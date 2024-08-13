@@ -1,6 +1,6 @@
 use crate::core::compiler::{BuildConfig, MessageFormat, TimingOutput};
 use crate::core::resolver::CliFeatures;
-use crate::core::{Edition, Workspace};
+use crate::core::{shell, Edition, Target, TargetKind, Workspace};
 use crate::ops::lockfile::LOCKFILE_NAME;
 use crate::ops::registry::RegistryOrIndex;
 use crate::ops::{CompileFilter, CompileOptions, NewOptions, Packages, VersionControl};
@@ -19,6 +19,7 @@ use cargo_util_schemas::manifest::ProfileName;
 use cargo_util_schemas::manifest::RegistryName;
 use cargo_util_schemas::manifest::StringOrVec;
 use clap::builder::UnknownArgumentValueParser;
+use home::cargo_home_with_cwd;
 use std::ffi::{OsStr, OsString};
 use std::path::Path;
 use std::path::PathBuf;
@@ -177,7 +178,10 @@ pub trait CommandExt: Sized {
             ._arg(flag("examples", examples).help_heading(heading::TARGET_SELECTION))
             ._arg(
                 optional_multi_opt("example", "NAME", example)
-                    .help_heading(heading::TARGET_SELECTION),
+                    .help_heading(heading::TARGET_SELECTION)
+                    .add(clap_complete::ArgValueCandidates::new(
+                        get_example_candidates,
+                    )),
             )
     }
 
@@ -192,7 +196,10 @@ pub trait CommandExt: Sized {
             ._arg(flag("bins", bins).help_heading(heading::TARGET_SELECTION))
             ._arg(
                 optional_multi_opt("example", "NAME", example)
-                    .help_heading(heading::TARGET_SELECTION),
+                    .help_heading(heading::TARGET_SELECTION)
+                    .add(clap_complete::ArgValueCandidates::new(
+                        get_example_candidates,
+                    )),
             )
             ._arg(flag("examples", examples).help_heading(heading::TARGET_SELECTION))
     }
@@ -201,7 +208,10 @@ pub trait CommandExt: Sized {
         self._arg(optional_multi_opt("bin", "NAME", bin).help_heading(heading::TARGET_SELECTION))
             ._arg(
                 optional_multi_opt("example", "NAME", example)
-                    .help_heading(heading::TARGET_SELECTION),
+                    .help_heading(heading::TARGET_SELECTION)
+                    .add(clap_complete::ArgValueCandidates::new(
+                        get_example_candidates,
+                    )),
             )
     }
 
@@ -1025,6 +1035,32 @@ pub fn lockfile_path(
     }
 
     return Ok(Some(path));
+}
+
+fn get_example_candidates() -> Vec<clap_complete::CompletionCandidate> {
+    get_targets_from_metadata()
+        .unwrap_or_default()
+        .into_iter()
+        .filter_map(|target| match target.kind() {
+            TargetKind::ExampleBin => Some(clap_complete::CompletionCandidate::new(target.name())),
+            _ => None,
+        })
+        .collect::<Vec<_>>()
+}
+
+fn get_targets_from_metadata() -> CargoResult<Vec<Target>> {
+    let cwd = std::env::current_dir()?;
+    let gctx = GlobalContext::new(shell::Shell::new(), cwd.clone(), cargo_home_with_cwd(&cwd)?);
+    let ws = Workspace::new(&find_root_manifest_for_wd(&cwd)?, &gctx)?;
+
+    let packages = ws.members().collect::<Vec<_>>();
+
+    let targets = packages
+        .into_iter()
+        .flat_map(|pkg| pkg.targets().into_iter().cloned())
+        .collect::<Vec<_>>();
+
+    Ok(targets)
 }
 
 #[track_caller]
