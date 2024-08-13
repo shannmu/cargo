@@ -1,6 +1,6 @@
 use crate::core::compiler::{BuildConfig, MessageFormat, TimingOutput};
 use crate::core::resolver::CliFeatures;
-use crate::core::{Edition, Workspace};
+use crate::core::{shell, Edition, Workspace};
 use crate::ops::lockfile::LOCKFILE_NAME;
 use crate::ops::registry::RegistryOrIndex;
 use crate::ops::{CompileFilter, CompileOptions, NewOptions, Packages, VersionControl};
@@ -19,6 +19,7 @@ use cargo_util_schemas::manifest::ProfileName;
 use cargo_util_schemas::manifest::RegistryName;
 use cargo_util_schemas::manifest::StringOrVec;
 use clap::builder::UnknownArgumentValueParser;
+use home::cargo_home_with_cwd;
 use std::ffi::{OsStr, OsString};
 use std::path::Path;
 use std::path::PathBuf;
@@ -261,7 +262,10 @@ pub trait CommandExt: Sized {
         };
         self._arg(
             optional_multi_opt("target", "TRIPLE", target)
-                .help_heading(heading::COMPILATION_OPTIONS),
+                .help_heading(heading::COMPILATION_OPTIONS)
+                .add(clap_complete::dynamic::ArgValueCompleter::new(
+                    get_target_triple,
+                )),
         )
         ._arg(unsupported_short_arg)
     }
@@ -1025,6 +1029,65 @@ pub fn lockfile_path(
     }
 
     return Ok(Some(path));
+}
+
+fn get_target_triple() -> Vec<clap_complete::dynamic::CompletionCandidate> {
+    let mut candidates = Vec::new();
+
+    if is_rustup() {
+        if let Ok(targets) = get_targets_from_rustup() {
+            for (target, installed) in targets {
+                candidates.push(
+                    clap_complete::dynamic::CompletionCandidate::new(target).hide(!installed),
+                );
+            }
+        }
+    } else {
+        if let Ok(targets) = get_target_from_rustc() {
+            for target in targets {
+                candidates.push(clap_complete::dynamic::CompletionCandidate::new(target));
+            }
+        }
+    }
+
+    candidates
+}
+
+// Return `(String, bool)`` where the bool is true if the target is installed
+fn get_targets_from_rustup() -> CargoResult<Vec<(String, bool)>> {
+    let output = std::process::Command::new("rustup")
+        .arg("target")
+        .arg("list")
+        .output()?;
+
+    if !output.status.success() {
+        return Ok(vec![]);
+    }
+
+    let stdout = String::from_utf8(output.stdout)?;
+
+    Ok(stdout
+        .lines()
+        .map(|line| {
+            let target = line.split_once(' ');
+            match target {
+                None => (line.to_owned(), false),
+                Some((target, _installed)) => (target.to_owned(), true),
+            }
+        })
+        .collect())
+}
+
+fn get_target_from_rustc() -> CargoResult<Vec<String>> {
+    let cwd = std::env::current_dir()?;
+    let gctx = GlobalContext::new(shell::Shell::new(), cwd.clone(), cargo_home_with_cwd(&cwd)?);
+    let ws = Workspace::new(&find_root_manifest_for_wd(&PathBuf::from("."))?, &gctx)?;
+
+    let rustc = gctx.load_global_rustc(Some(&ws))?;
+    let (stdout, _stderr) =
+        rustc.cached_output(rustc.process().arg("--print").arg("target-list"), 0)?;
+
+    Ok(stdout.lines().map(|line| line.to_owned()).collect())
 }
 
 #[track_caller]
