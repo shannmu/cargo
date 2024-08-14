@@ -13,7 +13,7 @@ use crate::util::{
     print_available_packages, print_available_tests,
 };
 use crate::CargoResult;
-use anyhow::bail;
+use anyhow::{anyhow, bail};
 use cargo_util::paths;
 use cargo_util_schemas::manifest::ProfileName;
 use cargo_util_schemas::manifest::RegistryName;
@@ -173,7 +173,13 @@ pub trait CommandExt: Sized {
     ) -> Self {
         self._arg(flag("lib", lib).help_heading(heading::TARGET_SELECTION))
             ._arg(flag("bins", bins).help_heading(heading::TARGET_SELECTION))
-            ._arg(optional_multi_opt("bin", "NAME", bin).help_heading(heading::TARGET_SELECTION))
+            ._arg(
+                optional_multi_opt("bin", "NAME", bin)
+                    .help_heading(heading::TARGET_SELECTION)
+                    .add(clap_complete::dynamic::ArgValueCompleter::new(
+                        get_bin_candidates,
+                    )),
+            )
             ._arg(flag("examples", examples).help_heading(heading::TARGET_SELECTION))
             ._arg(
                 optional_multi_opt("example", "NAME", example)
@@ -188,21 +194,31 @@ pub trait CommandExt: Sized {
         example: &'static str,
         examples: &'static str,
     ) -> Self {
-        self._arg(optional_multi_opt("bin", "NAME", bin).help_heading(heading::TARGET_SELECTION))
-            ._arg(flag("bins", bins).help_heading(heading::TARGET_SELECTION))
-            ._arg(
-                optional_multi_opt("example", "NAME", example)
-                    .help_heading(heading::TARGET_SELECTION),
-            )
-            ._arg(flag("examples", examples).help_heading(heading::TARGET_SELECTION))
+        self._arg(
+            optional_multi_opt("bin", "NAME", bin)
+                .help_heading(heading::TARGET_SELECTION)
+                .add(clap_complete::dynamic::ArgValueCompleter::new(
+                    get_bin_candidates,
+                )),
+        )
+        ._arg(flag("bins", bins).help_heading(heading::TARGET_SELECTION))
+        ._arg(
+            optional_multi_opt("example", "NAME", example).help_heading(heading::TARGET_SELECTION),
+        )
+        ._arg(flag("examples", examples).help_heading(heading::TARGET_SELECTION))
     }
 
     fn arg_targets_bin_example(self, bin: &'static str, example: &'static str) -> Self {
-        self._arg(optional_multi_opt("bin", "NAME", bin).help_heading(heading::TARGET_SELECTION))
-            ._arg(
-                optional_multi_opt("example", "NAME", example)
-                    .help_heading(heading::TARGET_SELECTION),
-            )
+        self._arg(
+            optional_multi_opt("bin", "NAME", bin)
+                .help_heading(heading::TARGET_SELECTION)
+                .add(clap_complete::dynamic::ArgValueCompleter::new(
+                    get_bin_candidates,
+                )),
+        )
+        ._arg(
+            optional_multi_opt("example", "NAME", example).help_heading(heading::TARGET_SELECTION),
+        )
     }
 
     fn arg_features(self) -> Self {
@@ -333,7 +349,11 @@ pub trait CommandExt: Sized {
             .value_name("VCS")
             .value_parser(["git", "hg", "pijul", "fossil", "none"]),
         )
-        ._arg(flag("bin", "Use a binary (application) template [default]"))
+        ._arg(
+            flag("bin", "Use a binary (application) template [default]").add(
+                clap_complete::dynamic::ArgValueCompleter::new(get_bin_candidates),
+            ),
+        )
         ._arg(flag("lib", "Use a library template"))
         ._arg(
             opt("edition", "Edition to set for the crate generated")
@@ -1025,6 +1045,42 @@ pub fn lockfile_path(
     }
 
     return Ok(Some(path));
+}
+
+fn get_bin_candidates() -> Vec<clap_complete::dynamic::CompletionCandidate> {
+    get_bins_from_manifest()
+        .map(|bins| {
+            bins.into_iter()
+                .map(|bin| clap_complete::dynamic::CompletionCandidate::new(bin))
+                .collect()
+        })
+        .unwrap_or(vec![])
+}
+
+fn get_bins_from_manifest() -> Option<Vec<String>> {
+    let manifest = get_manifest_with_table().ok()?;
+    let mut bins = vec![];
+
+    let bins_array = manifest.get("bin")?.as_array()?;
+
+    for bin in bins_array {
+        let name = bin.as_table()?.get("name")?.as_str()?;
+        bins.push(name.to_owned());
+    }
+
+    Some(bins)
+}
+
+fn get_manifest_with_table() -> CargoResult<toml::Table> {
+    let menifest = env!("CARGO_MANIFEST_DIR");
+    let menifest = Path::new(menifest).join("Cargo.toml");
+
+    let value = toml::from_str::<toml::Value>(&std::fs::read_to_string(menifest)?)?;
+
+    match value {
+        toml::Value::Table(table) => Ok(table),
+        _ => Err(anyhow!("Error")),
+    }
 }
 
 #[track_caller]
