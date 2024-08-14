@@ -682,7 +682,15 @@ See '<cyan,bold>cargo help</> <cyan><<command>></>' for more information on a sp
             .short('Z')
             .value_name("FLAG")
             .action(ArgAction::Append)
-            .global(true))
+            .global(true)
+        .add(clap_complete::dynamic::ArgValueCompleter::new(|| {
+            let flags = CliUnstable::help();
+            flags.into_iter().map(|flag| {
+                clap_complete::dynamic::CompletionCandidate::new(flag.0.replace("_", "-")).help(flag.1.map(|help| {
+                    help.into()
+                }))
+            }).collect()
+        })))
         .subcommands(commands::builtin())
 }
 

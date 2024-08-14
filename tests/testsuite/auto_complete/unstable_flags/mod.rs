@@ -5,12 +5,16 @@ use snapbox::assert_data_eq;
 fn bash() {
     let input = "cargo -Z \t\t";
     let expected = snapbox::str!["% 
-.cargo/               CODE_OF_CONDUCT.md    LICENSE-THIRD-PARTY   crates/               tests/
-.git/                 CONTRIBUTING.md       README.md             credential/           triagebot.toml
-.github/              Cargo.lock            benches/              deny.toml             windows.manifest.xml
-.gitignore            Cargo.toml            build.rs              publish.py            
-.ignore               LICENSE-APACHE        ci/                   src/                  
-CHANGELOG.md          LICENSE-MIT           clippy.toml           target/               "];
+advanced-env              config-include            msrv-policy               rustdoc-map
+allow-features            direct-minimal-versions   mtime-on-use              rustdoc-scrape-examples
+asymmetric-token          doctest-xcompile          next-lockfile-bump        script
+avoid-dev-deps            dual-proc-macros          no-index-update           separate-nightlies
+binary-dep-depinfo        features                  package-workspace         skip-rustdoc-fingerprint
+bindeps                   gc                        panic-abort-tests         target-applies-to-host
+build-std                 git                       print-im-a-teapot         trim-paths
+build-std-features        gitoxide                  profile-rustflags         unstable-options
+cargo-lints               host-config               public-dependency         
+codegen-backend           minimal-versions          publish-timeout           "];
     let actual = super::common::complete(input, "bash");
 
     assert_data_eq!(actual, expected);
@@ -20,12 +24,16 @@ CHANGELOG.md          LICENSE-MIT           clippy.toml           target/       
 fn zsh() {
     let input = "cargo -Z \t\t";
     let expected = snapbox::str!["% cargo -Z
-.cargo/               CODE_OF_CONDUCT.md    LICENSE-THIRD-PARTY   crates/               tests/
-.git/                 CONTRIBUTING.md       README.md             credential/           triagebot.toml
-.github/              Cargo.lock            benches/              deny.toml             windows.manifest.xml
-.gitignore            Cargo.toml            build.rs              publish.py            
-.ignore               LICENSE-APACHE        ci/                   src/                  
-CHANGELOG.md          LICENSE-MIT           clippy.toml           target/               "];
+advanced-env              config-include            msrv-policy               rustdoc-map
+allow-features            direct-minimal-versions   mtime-on-use              rustdoc-scrape-examples
+asymmetric-token          doctest-xcompile          next-lockfile-bump        script
+avoid-dev-deps            dual-proc-macros          no-index-update           separate-nightlies
+binary-dep-depinfo        features                  package-workspace         skip-rustdoc-fingerprint
+bindeps                   gc                        panic-abort-tests         target-applies-to-host
+build-std                 git                       print-im-a-teapot         trim-paths
+build-std-features        gitoxide                  profile-rustflags         unstable-options
+cargo-lints               host-config               public-dependency         
+codegen-backend           minimal-versions          publish-timeout           "];
     let actual = super::common::complete(input, "zsh");
 
     assert_data_eq!(actual, expected);
