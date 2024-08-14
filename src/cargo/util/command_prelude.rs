@@ -986,6 +986,60 @@ pub fn root_manifest(manifest_path: Option<&Path>, gctx: &GlobalContext) -> Carg
     }
 }
 
+pub fn get_toolchains_from_rustup() -> CargoResult<Vec<String>> {
+    let output = std::process::Command::new("rustup")
+        .arg("toolchain")
+        .arg("list")
+        .output()?;
+
+    if output.status.success() {
+        let stdout = String::from_utf8(output.stdout)?;
+        return Ok(stdout.lines().map(|s| s.to_string()).collect());
+    }
+
+    Ok(vec![])
+}
+
+pub fn get_toolchain_candidates() -> Vec<clap_complete::dynamic::CompletionCandidate> {
+    let mut candidates = vec![];
+
+    if let Ok(toolchains) = get_toolchains_from_rustup() {
+        for toolchain in toolchains {
+            // Remove the "(default)" suffix from the toolchain name
+            let toolchain = toolchain.replace("(default)", "");
+            let toolchain = toolchain.trim();
+
+            // Regular expression matching for toolchain, to check if there is a channel or date in the toolchain name
+            // If there is a channel and date, we will also suggest the `channel-date`.
+            // Otherwise, we will only suggest the channel and toolchain name.
+            let channel = r"nightly|beta|stable|[0-9]\.[0-9]{1,2}\.[0-9]";
+            let date = r"[0-9]{4}-[0-9]{2}-[0-9]{2}";
+            if let Ok(re) = regex::bytes::Regex::new(&format!("^({})(-{})?(-.*)", channel, date)) {
+                let mut locs = re.capture_locations();
+
+                if let Some(_) = re.captures_read(&mut locs, toolchain.as_bytes()) {
+                    if let Some(_) = locs.get(3) {
+                        let channel_date = &toolchain[..locs.get(2).unwrap().1];
+                        candidates.push(clap_complete::dynamic::CompletionCandidate::new(
+                            channel_date,
+                        ));
+                    } else {
+                        let channel = &toolchain[..locs.get(1).unwrap().1];
+                        candidates.push(clap_complete::dynamic::CompletionCandidate::new(channel));
+                    }
+                }
+            }
+
+            candidates.push(clap_complete::dynamic::CompletionCandidate::new(toolchain));
+        }
+    }
+
+    candidates
+        .into_iter()
+        .map(|comp| comp.add_prefix("+"))
+        .collect()
+}
+
 #[track_caller]
 pub fn ignore_unknown<T: Default>(r: Result<T, clap::parser::MatchesError>) -> T {
     match r {
