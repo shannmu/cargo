@@ -6,6 +6,7 @@ mod advanced_env;
 mod alt_registry;
 mod artifact_dep;
 mod artifact_dir;
+mod auto_complete;
 mod bad_config;
 mod bad_manifest_path;
 mod bench;

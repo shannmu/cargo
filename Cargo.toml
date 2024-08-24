@@ -205,6 +205,8 @@ unicode-width.workspace = true
 url.workspace = true
 walkdir.workspace = true
 supports-unicode = "3.0.0"
+completest = { version = "0.4.2", path = "../completest/"}
+completest-pty = { version = "0.5.3", path = "../completest/crates/completest-pty"}
 
 [target.'cfg(target_has_atomic = "64")'.dependencies]
 tracing-chrome.workspace = true
