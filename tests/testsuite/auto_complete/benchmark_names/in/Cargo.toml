@@ -1,0 +1,12 @@
+[workspace]
+
+[package]
+name="cargo-bench-names-autocomplete"
+version="0.0.0"
+edition="2015"
+
+[[bench]]
+name="compile_bench"
+
+[[bench]]
+name="runtime_bench"
