@@ -7,7 +7,6 @@ pub fn builtin() -> Vec<Command> {
         build::cli(),
         check::cli(),
         clean::cli(),
-        complete::cli(),
         config::cli(),
         doc::cli(),
         fetch::cli(),
@@ -53,7 +52,6 @@ pub fn builtin_exec(cmd: &str) -> Option<Exec> {
         "build" => build::exec,
         "check" => check::exec,
         "clean" => clean::exec,
-        "complete" => complete::exec,
         "config" => config::exec,
         "doc" => doc::exec,
         "fetch" => fetch::exec,
@@ -97,7 +95,6 @@ pub mod bench;
 pub mod build;
 pub mod check;
 pub mod clean;
-pub mod complete;
 pub mod config;
 pub mod doc;
 pub mod fetch;

@@ -55,6 +55,16 @@ pub fn main(gctx: &mut GlobalContext) -> CliResult {
     if expanded_args
         .get_one::<String>("unstable-features")
         .map(String::as_str)
+        == Some("native-completion")
+    {
+        // Don't let config errors get in the way of parsing arguments
+        let _ = configure_gctx(gctx, &expanded_args, None, global_args, None);
+        if gctx.cli_unstable().native_completion {
+            clap_complete::CompleteEnv::with_factory(|| cli(gctx)).complete();
+        }
+    } else if expanded_args
+        .get_one::<String>("unstable-features")
+        .map(String::as_str)
         == Some("help")
     {
         // Don't let config errors get in the way of parsing arguments
