@@ -116,6 +116,7 @@ Each new feature described below should explain how to use it.
     * [gitoxide](#gitoxide) --- Use `gitoxide` instead of `git2` for a set of operations.
     * [script](#script) --- Enable support for single-file `.rs` packages.
     * [lockfile-path](#lockfile-path) --- Allows to specify a path to lockfile other than the default path `<workspace_root>/Cargo.lock`.
+    * [native-completions](#native-completion) --- Move cargo shell completions to native completions
 
 ## allow-features
 
@@ -1642,6 +1643,27 @@ Example:
 ```sh
 cargo +nightly metadata --lockfile-path=$LOCKFILES_ROOT/my-project/Cargo.lock -Z unstable-options
 ```
+
+## native-completions
+* Original Issue: [#6645](https://github.com/rust-lang/cargo/issues/6645)
+* Tracking Issue: [#14520](https://github.com/rust-lang/cargo/issues/14520)
+
+This feature moves the handwritten completion scripts to Rust native, making it
+easier for us to add, extend and test new completions. This feature is enabled with the
+nightly channel, without requiring additional `-Z` options.
+
+### How to use native-completions feature:
+- bash:
+  Add `source <(CARGO_COMPLETE=bash cargo)` to your .bashrc.
+
+- zsh:
+  Add `source <(CARGO_COMPLETE=zsh cargo)` to your .zshrc.
+  
+- fish:
+  Add `source (CARGO_COMPLETE=fish cargo | psub)` to `$XDG_CONFIG_HOME/fish/completions/cargo.fish`
+
+- elvish:
+  Add `eval (E:CARGO_COMPLETE=elvish cargo | slurp)` to `$XDG_CONFIG_HOME/elvish/rc.elv`
 
 # Stabilized and removed features
 
