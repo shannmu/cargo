@@ -5,6 +5,61 @@ use cargo_test_support::cargo_test;
 
 // TODO: How to build a environment-independent test
 #[cargo_test]
+fn test_get_installed_crates() {
+    let expected = snapbox::str![
+        "bindgen
+bootimage
+cargo-bootimage
+cargo-cov
+cargo-nm
+cargo-objcopy
+cargo-objdump
+cargo-profdata
+cargo-readobj
+cargo-size
+cargo-strip
+rust-ar
+rust-cov
+rust-ld
+rust-lld
+rust-nm
+rust-objcopy
+rust-objdump
+rust-profdata
+rust-readobj
+rust-size
+rust-strip
+cargo-nextest
+cargo-semver-checks
+cargo-xb
+cargo-xbuild
+cargo-xc
+cargo-xcheck
+cargo-xclippy
+cargo-xdoc
+cargo-xfix
+cargo-xinstall
+cargo-xpublish
+cargo-xr
+cargo-xrun
+cargo-xrustc
+cargo-xt
+cargo-xtest
+mdbook
+mdbook-toc
+mini-redis-cli
+mini-redis-server
+nu
+cargo-rudra
+rudra
+rustfilt"
+    ];
+    let actual = print_candidates(get_installed_crates());
+    snapbox::assert_data_eq!(actual, expected);
+}
+
+// TODO: How to build a environment-independent test
+#[cargo_test]
 fn test_get_target_triples() {
     let current_dir = std::env::current_dir().expect("Failed to get current directory");
     let cwd = PathBuf::from(file!()).parent().unwrap().join("template");
