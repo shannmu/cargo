@@ -1348,6 +1348,28 @@ fn get_packages(cwd: Option<PathBuf>) -> CargoResult<Vec<Package>> {
     Ok(packages)
 }
 
+pub fn get_installed_crates() -> Vec<clap_complete::CompletionCandidate> {
+    get_installed_crates_().unwrap_or_default()
+}
+
+fn get_installed_crates_() -> Option<Vec<clap_complete::CompletionCandidate>> {
+    let mut candidates = Vec::new();
+
+    let gctx = GlobalContext::default().ok()?;
+
+    let root = ops::resolve_root(None, &gctx).ok()?;
+
+    let tracker = ops::InstallTracker::load(&gctx, &root).ok()?;
+
+    for (_, v) in tracker.all_installed_bins() {
+        for bin in v {
+            candidates.push(clap_complete::CompletionCandidate::new(bin));
+        }
+    }
+
+    Some(candidates)
+}
+
 pub fn new_gctx_for_completions(cwd: Option<PathBuf>) -> CargoResult<GlobalContext> {
     let cwd = cwd.unwrap_or(std::env::current_dir()?);
     let mut gctx = GlobalContext::new(shell::Shell::new(), cwd.clone(), cargo_home_with_cwd(&cwd)?);
