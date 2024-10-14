@@ -692,6 +692,9 @@ See '<cyan,bold>cargo help</> <cyan><<command>></>' for more information on a sp
             }).collect()
         })))
         .subcommands(commands::builtin())
+        .add(clap_complete::engine::SubcommandCandidates::new( || {
+            get_alias_names().unwrap_or_default()
+        }))
 }
 
 #[test]

@@ -1318,6 +1318,23 @@ fn get_packages() -> CargoResult<Vec<Package>> {
     Ok(packages)
 }
 
+pub fn get_alias_names() -> CargoResult<Vec<clap_complete::CompletionCandidate>> {
+    let gctx = new_gctx_for_completions()?;
+
+    if let Ok(Some(aliases)) = gctx.get::<Option<HashMap<String, serde_json::Value>>>("alias") {
+        Ok(aliases
+            .into_iter()
+            .map(|(name, command)| {
+                clap_complete::CompletionCandidate::new(name.to_owned())
+                    .help(Some(command.to_string().into()))
+                    .hide(true)
+            })
+            .collect())
+    } else {
+        Ok(vec![])
+    }
+}
+
 fn new_gctx_for_completions() -> CargoResult<GlobalContext> {
     let cwd = std::env::current_dir()?;
     let mut gctx = GlobalContext::new(shell::Shell::new(), cwd.clone(), cargo_home_with_cwd(&cwd)?);
