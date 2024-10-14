@@ -181,7 +181,7 @@ fn aliased_command(gctx: &GlobalContext, command: &str) -> CargoResult<Option<Ve
 }
 
 /// List all runnable commands
-fn list_commands(gctx: &GlobalContext) -> BTreeMap<String, CommandInfo> {
+pub(crate) fn list_commands(gctx: &GlobalContext) -> BTreeMap<String, CommandInfo> {
     let prefix = "cargo-";
     let suffix = env::consts::EXE_SUFFIX;
     let mut commands = BTreeMap::new();

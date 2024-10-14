@@ -692,6 +692,21 @@ See '<cyan,bold>cargo help</> <cyan><<command>></>' for more information on a sp
             }).collect()
         })))
         .subcommands(commands::builtin())
+        .add(clap_complete::engine::SubcommandCandidates::new( || {
+            let gctx = new_gctx_for_completions();
+            if let Ok(gctx) = gctx {
+                let subcommands = list_commands(&gctx);
+                subcommands.into_iter().filter_map(|(name, info)| {
+                    match info {
+                        CommandInfo::BuiltIn { about: _ } => None,
+                        CommandInfo::Alias { target } => Some(clap_complete::CompletionCandidate::new(name).help(Some(format!("alias: {}", target.iter().join(" ")).into())).hide(true)),
+                        CommandInfo::External { path: _ } => Some(clap_complete::CompletionCandidate::new(name).hide(true)),
+                    }
+                }).collect()
+            } else {
+                vec![]
+            }
+        }))
 }
 
 #[test]
